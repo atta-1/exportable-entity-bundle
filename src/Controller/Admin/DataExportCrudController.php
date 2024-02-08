@@ -32,7 +32,7 @@ class DataExportCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Excel Export')
             ->setDefaultSort(['id' => 'DESC'])
             ->setPaginatorPageSize(50)
-            ;
+        ;
     }
 
     public function configureActions(Actions $actions): Actions
@@ -44,7 +44,7 @@ class DataExportCrudController extends AbstractCrudController
             ->disable(Action::NEW)
             ->disable(Action::EDIT)
             ->disable(Action::DELETE)
-            ;
+        ;
     }
 
     public function configureFields(string $pageName): iterable
