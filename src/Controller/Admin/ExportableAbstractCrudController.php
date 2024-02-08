@@ -54,7 +54,7 @@ abstract class ExportableAbstractCrudController extends AbstractCrudController
 
         $date = new \DateTime();
         /** @var class-string $className */
-        $className = self::getEntityFqcn();
+        $className = static::getEntityFqcn();
 
         $reflectionClass = (new \ReflectionClass($className))->getShortName();
         /** @var string[] $explodedClassName */
