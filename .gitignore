@@ -1,0 +1,7 @@
+.idea/
+/bin/
+/vendor/
+/composer.phar
+/.phpunit.cache
+/.php-cs-fixer.cache
+/.phpunit.result.cache

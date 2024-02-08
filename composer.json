@@ -1,0 +1,47 @@
+{
+    "name": "atta-1/exportable-entity-bundle",
+    "type": "library",
+    "license": "proprietary",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.1",
+        "ext-gd": "*",
+        "doctrine/doctrine-bundle": "^2.5",
+        "doctrine/orm": "^2.12",
+        "easycorp/easyadmin-bundle": "^4.0",
+        "league/flysystem-bundle": "^3.1",
+        "phpoffice/phpspreadsheet": "^1.29",
+        "symfony/config": "^6.1",
+        "symfony/dependency-injection": "^6.1",
+        "symfony/http-kernel": "^6.1",
+        "symfony/messenger": "^6.1",
+        "symfony/security-core": "^6.1",
+        "symfony/serializer": "^6.1",
+        "symfony/uid": "^6.1"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "jetbrains/phpstorm-attributes": "^1.0",
+        "phpunit/phpunit": "^9.5",
+        "roave/security-advisories": "dev-latest"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atta\\ExportableEntityBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atta\\ExportableEntityBundle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "bin-dir": "./bin",
+        "optimize-autoloader": true,
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    }
+}
