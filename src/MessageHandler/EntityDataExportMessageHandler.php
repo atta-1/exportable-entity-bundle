@@ -106,9 +106,9 @@ class EntityDataExportMessageHandler
     }
 
     private function changeExportExcelStatus(
-        DataExport       $exportExcelObject,
+        DataExport $exportExcelObject,
         ExportFileStatus $status,
-        ?string          $exceptionMessage = null,
+        ?string $exceptionMessage = null,
     ): void {
         /** @var DataExport $exportExcel */
         $exportExcel = $this->entityManager->find(DataExport::class, $exportExcelObject->getId());
