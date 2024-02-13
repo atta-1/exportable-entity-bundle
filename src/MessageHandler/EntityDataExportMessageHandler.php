@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Proxy;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\String\UnicodeString;
@@ -40,7 +39,7 @@ class EntityDataExportMessageHandler
                     (new UnicodeString($property))->title(true)->toString(),
                 );
 
-                return ['value' => implode(' ', array_filter($propertyAsWords))];
+                return implode(' ', array_filter($propertyAsWords));
             },
             $properties,
         );
@@ -74,10 +73,7 @@ class EntityDataExportMessageHandler
                         $value = '';
                     }
 
-                    $entityRowData[] = [
-                        'value' => $value,
-                        'format' => is_string($value) ? NumberFormat::FORMAT_TEXT : NumberFormat::FORMAT_NUMBER,
-                    ];
+                    $entityRowData[] = $value;
                 }
 
                 $this->writeRow($fileStream, $entityRowData);
@@ -167,10 +163,7 @@ class EntityDataExportMessageHandler
      */
     private function writeRow($fileStream, array $data): void
     {
-        $result = fputcsv(
-            $fileStream,
-            array_map(static fn ($itemData) => $itemData['value'], $data),
-        );
+        $result = fputcsv($fileStream, $data);
 
         if ($result === false) {
             throw new \RuntimeException('Cannot write to file stream');

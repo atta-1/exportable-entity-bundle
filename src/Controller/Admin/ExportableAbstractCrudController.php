@@ -82,5 +82,8 @@ abstract class ExportableAbstractCrudController extends AbstractCrudController
         );
     }
 
-    abstract protected function prepareEntityDataExportMessage(string $className, QueryBuilder $queryBuilder, string $filename): EntityDataExportMessage;
+    public function prepareEntityDataExportMessage(string $className, QueryBuilder $queryBuilder, string $filename): EntityDataExportMessage
+    {
+        return new EntityDataExportMessage($className, $queryBuilder->getDQL(), $queryBuilder->getParameters(), $filename);
+    }
 }
