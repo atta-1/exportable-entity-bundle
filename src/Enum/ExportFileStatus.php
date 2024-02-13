@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atta\ExportableEntityBundle\Enum;
 
-enum ExportExcelStatus: string
+enum ExportFileStatus: string
 {
     case Processing = 'processing';
     case Done = 'done';

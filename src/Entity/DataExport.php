@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atta\ExportableEntityBundle\Entity;
 
-use Atta\ExportableEntityBundle\Enum\ExportExcelStatus;
+use Atta\ExportableEntityBundle\Enum\ExportFileStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -24,8 +24,8 @@ class DataExport
     #[ORM\Column(name: 'download_url', type: Types::STRING, nullable: false)]
     private ?string $downloadUrl;
 
-    #[ORM\Column(name: 'status', type: Types::STRING, length: 50, enumType: ExportExcelStatus::class)]
-    private ExportExcelStatus $status;
+    #[ORM\Column(name: 'status', type: Types::STRING, length: 50, enumType: ExportFileStatus::class)]
+    private ExportFileStatus $status;
 
     #[ORM\Column(name: 'exception_message', type: Types::TEXT, nullable: true)]
     private ?string $exceptionMessage;
@@ -55,12 +55,12 @@ class DataExport
         return $this->downloadUrl === null ? null : basename($this->downloadUrl);
     }
 
-    public function getStatus(): ExportExcelStatus
+    public function getStatus(): ExportFileStatus
     {
         return $this->status;
     }
 
-    public function setStatus(ExportExcelStatus $status): self
+    public function setStatus(ExportFileStatus $status): self
     {
         $this->status = $status;
 

@@ -6,7 +6,7 @@ namespace Atta\ExportableEntityBundle\MessageHandler;
 
 use Atta\ExportableEntityBundle\Attribute\Exportable;
 use Atta\ExportableEntityBundle\Entity\DataExport;
-use Atta\ExportableEntityBundle\Enum\ExportExcelStatus;
+use Atta\ExportableEntityBundle\Enum\ExportFileStatus;
 use Atta\ExportableEntityBundle\Helper\ReflectionHelper;
 use Atta\ExportableEntityBundle\Message\EntityDataExportMessage;
 use Doctrine\ORM\EntityManagerInterface;
@@ -85,9 +85,9 @@ class EntityDataExportMessageHandler
             $fileName = $exportExcel->getFilename();
             $this->save($fileStream, $tmpFileName, $fileName);
 
-            $this->changeExportExcelStatus($exportExcel, ExportExcelStatus::Done);
+            $this->changeExportExcelStatus($exportExcel, ExportFileStatus::Done);
         } catch (\Throwable $exception) {
-            $this->changeExportExcelStatus($exportExcel, ExportExcelStatus::Error, $exception->getMessage());
+            $this->changeExportExcelStatus($exportExcel, ExportFileStatus::Error, $exception->getMessage());
             throw $exception;
         }
     }
@@ -95,7 +95,7 @@ class EntityDataExportMessageHandler
     private function createExcelExport(string $fileName): DataExport
     {
         $entity = (new DataExport())
-            ->setStatus(ExportExcelStatus::Processing)
+            ->setStatus(ExportFileStatus::Processing)
             ->setCreatedAt(new \DateTimeImmutable())
             ->setDownloadUrl($this->azureBlobFiles->publicUrl($fileName));
 
@@ -106,9 +106,9 @@ class EntityDataExportMessageHandler
     }
 
     private function changeExportExcelStatus(
-        DataExport $exportExcelObject,
-        ExportExcelStatus $status,
-        ?string $exceptionMessage = null,
+        DataExport       $exportExcelObject,
+        ExportFileStatus $status,
+        ?string          $exceptionMessage = null,
     ): void {
         /** @var DataExport $exportExcel */
         $exportExcel = $this->entityManager->find(DataExport::class, $exportExcelObject->getId());
