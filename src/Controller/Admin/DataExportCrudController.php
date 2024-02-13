@@ -28,8 +28,8 @@ class DataExportCrudController extends AbstractCrudController
     {
         return $crud
             ->setFormThemes(['admin/crud/form_theme.html.twig'])
-            ->setEntityLabelInPlural('Excel Exports')
-            ->setEntityLabelInSingular('Excel Export')
+            ->setEntityLabelInPlural('Data Exports')
+            ->setEntityLabelInSingular('Data Export')
             ->setDefaultSort(['id' => 'DESC'])
             ->setPaginatorPageSize(50)
         ;
