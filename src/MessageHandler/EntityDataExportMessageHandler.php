@@ -7,10 +7,8 @@ namespace Atta\ExportableEntityBundle\MessageHandler;
 use Atta\ExportableEntityBundle\Attribute\Exportable;
 use Atta\ExportableEntityBundle\Entity\DataExport;
 use Atta\ExportableEntityBundle\Enum\ExportFileStatus;
-use Atta\ExportableEntityBundle\Helper\ReflectionHelper;
 use Atta\ExportableEntityBundle\Message\EntityDataExportMessage;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\Proxy;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -64,7 +62,6 @@ class EntityDataExportMessageHandler
                 $propertyAccessor = PropertyAccess::createPropertyAccessor();
                 foreach ($properties as $property) {
                     $value = $propertyAccessor->getValue($entityObject, $property);
-                    // $value = ReflectionHelper::getPropertyValue($entityObject, $property);
                     if ($value instanceof \DateTimeImmutable) {
                         $value = $value->format('Y-m-d H:i:s');
                     }
