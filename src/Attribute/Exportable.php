@@ -12,7 +12,7 @@ namespace Atta\ExportableEntityBundle\Attribute;
 class Exportable
 {
     public function __construct(
-        public ?string $relatedEntityProperty = null,
+        public array $relatedEntityProperties = [],
     ) {
     }
 }

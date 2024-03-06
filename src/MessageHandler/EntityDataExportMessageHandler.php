@@ -15,6 +15,7 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\String\UnicodeString;
 
 #[AsMessageHandler(handles: EntityDataExportMessage::class)]
@@ -31,8 +32,13 @@ class EntityDataExportMessageHandler
     {
         $dataExport = $this->createDataExport($message->getFilename());
         $properties = $this->getExportableProperties($message->getEntityClass());
+
         $header = array_map(
             static function (string $property) {
+                $relationPropertyParts = explode('.', $property);
+                /** @var string $property */
+                $property = end($relationPropertyParts);
+
                 /** @var string[] $propertyAsWords */
                 $propertyAsWords = preg_split(
                     '/(?=[A-Z])/',
@@ -55,8 +61,10 @@ class EntityDataExportMessageHandler
             $query->setParameters($message->getParameters());
             foreach ($query->toIterable() as $entityObject) {
                 $entityRowData = [];
+                $propertyAccessor = PropertyAccess::createPropertyAccessor();
                 foreach ($properties as $property) {
-                    $value = ReflectionHelper::getPropertyValue($entityObject, $property);
+                    $value = $propertyAccessor->getValue($entityObject, $property);
+                    // $value = ReflectionHelper::getPropertyValue($entityObject, $property);
                     if ($value instanceof \DateTimeImmutable) {
                         $value = $value->format('Y-m-d H:i:s');
                     }
@@ -64,7 +72,7 @@ class EntityDataExportMessageHandler
                         $value = $value ? 'Yes' : 'No';
                     }
                     if (is_object($value)) {
-                        $value = $this->extractRelationValue($message->getEntityClass(), $property, $value);
+                        $value = method_exists($value, '__toString') ? $value->__toString() : null;
                     }
                     if (is_array($value)) {
                         $value = print_r($value, true);
@@ -133,28 +141,17 @@ class EntityDataExportMessageHandler
                 continue;
             }
 
-            $return[] = $reflectorProperty->getName();
+            $relationProperties = $reflectorProperty->getAttributes(Exportable::class)[0]->getArguments();
+            if (empty($relationProperties)) {
+                $return[] = $reflectorProperty->getName();
+            } else {
+                foreach ($relationProperties['relatedEntityProperties'] as $relationProperty) {
+                    $return[] = $reflectorProperty->getName().'.'.$relationProperty;
+                }
+            }
         }
 
         return $return;
-    }
-
-    /** @param class-string $entityClassName */
-    private function extractRelationValue(string $entityClassName, string $propertyName, object $value): mixed
-    {
-        $reflectorClass = new \ReflectionClass($entityClassName);
-        $reflectorProperty = $reflectorClass->getProperty($propertyName);
-        $attribute = $reflectorProperty->getAttributes(Exportable::class)[0]->getArguments();
-        $relationProperty = $attribute['relatedEntityProperty'] ?? null;
-        if ($relationProperty === null) {
-            return method_exists($value, '__toString') ? $value->__toString() : null;
-        }
-
-        if ($value instanceof Proxy && !$value->__isInitialized()) {
-            $value->__load();
-        }
-
-        return ReflectionHelper::getPropertyValue($value, $relationProperty);
     }
 
     /**
