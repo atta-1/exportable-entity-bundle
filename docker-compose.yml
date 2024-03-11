@@ -7,6 +7,6 @@ services:
       context: ./.docker/php
     volumes:
       - ./.docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-      - ./:/app/exportable-entity-bundle
+      - ./:/app
     user: "${UID}:${GID}"
     command: tail -f /dev/null

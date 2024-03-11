@@ -1,4 +1,4 @@
-FROM php:8.1
+FROM php:8.2-cli
 
 SHELL ["/bin/bash", "--login", "-c"]
 
@@ -14,4 +14,4 @@ RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 USER ubuntu
 
-WORKDIR /app/exportable-entity-bundle
+WORKDIR /app

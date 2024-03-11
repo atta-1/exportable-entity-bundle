@@ -6,6 +6,10 @@ declare(strict_types=1);
 
 namespace Atta\ExportableEntityBundle\Helper;
 
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
+
 class ReflectionHelper
 {
     public static function getPropertyValue(object $object, string $propertyName): mixed
@@ -23,13 +27,13 @@ class ReflectionHelper
         $property->setValue($object, $value);
     }
 
-    private static function getPropertyReflection(object $object, string $propertyName): \ReflectionProperty
+    private static function getPropertyReflection(object $object, string $propertyName): ReflectionProperty
     {
-        $reflectionClass = new \ReflectionClass($object);
+        $reflectionClass = new ReflectionClass($object);
         while (true) {
             try {
                 return $reflectionClass->getProperty($propertyName);
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
                 if (!$reflectionClass = $reflectionClass->getParentClass()) {
                     throw $e;
                 }

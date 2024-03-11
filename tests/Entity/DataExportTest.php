@@ -7,6 +7,7 @@ namespace Atta\ExportableEntityBundle\Tests\Entity;
 use Atta\ExportableEntityBundle\Entity\DataExport;
 use Doctrine\ORM\Mapping\Entity;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class DataExportTest extends TestCase
 {
@@ -15,7 +16,7 @@ class DataExportTest extends TestCase
      */
     public function testInstance(): void
     {
-        $class = new \ReflectionClass(DataExport::class);
+        $class = new ReflectionClass(DataExport::class);
         $classAttrs = $class->getAttributes(Entity::class);
 
         // confirm that class has Entity attribute to call events
