@@ -8,13 +8,17 @@ use Atta\ExportableEntityBundle\Attribute\Exportable;
 use Atta\ExportableEntityBundle\Entity\DataExport;
 use Atta\ExportableEntityBundle\Enum\ExportFileStatus;
 use Atta\ExportableEntityBundle\Message\EntityDataExportMessage;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use ReflectionClass;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\String\UnicodeString;
+use Throwable;
 
 #[AsMessageHandler(handles: EntityDataExportMessage::class)]
 class EntityDataExportMessageHandler
@@ -30,39 +34,23 @@ class EntityDataExportMessageHandler
     {
         $dataExport = $this->createDataExport($message->getFilename());
         $properties = $this->getExportableProperties($message->getEntityClass());
-
-        $header = array_map(
-            static function (string $property) {
-                $relationPropertyParts = explode('.', $property);
-                /** @var string $property */
-                $property = end($relationPropertyParts);
-
-                /** @var string[] $propertyAsWords */
-                $propertyAsWords = preg_split(
-                    '/(?=[A-Z])/',
-                    (new UnicodeString($property))->title(true)->toString(),
-                );
-
-                return implode(' ', array_filter($propertyAsWords));
-            },
-            $properties,
-        );
+        $headers = $this->getHeaders($properties);
+        $propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         $tmpFileName = $this->getTempFileName();
         $fileStream = $this->createFileStream($tmpFileName);
 
         try {
-            $this->writeRow($fileStream, $header);
+            $this->writeRow($fileStream, $headers);
 
             $distinctQuery = str_replace('SELECT', 'SELECT DISTINCT', $message->getDql());
             $query = $this->entityManager->createQuery($distinctQuery);
             $query->setParameters($message->getParameters());
             foreach ($query->toIterable() as $entityObject) {
                 $entityRowData = [];
-                $propertyAccessor = PropertyAccess::createPropertyAccessor();
                 foreach ($properties as $property) {
                     $value = $propertyAccessor->getValue($entityObject, $property);
-                    if ($value instanceof \DateTimeImmutable) {
+                    if ($value instanceof DateTimeImmutable) {
                         $value = $value->format('Y-m-d H:i:s');
                     }
                     if (is_bool($value)) {
@@ -91,7 +79,7 @@ class EntityDataExportMessageHandler
             $this->save($fileStream, $tmpFileName, $fileName);
 
             $this->changeDataExportStatus($dataExport, ExportFileStatus::Done);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->changeDataExportStatus($dataExport, ExportFileStatus::Error, $exception->getMessage());
             throw $exception;
         }
@@ -101,7 +89,7 @@ class EntityDataExportMessageHandler
     {
         $entity = (new DataExport())
             ->setStatus(ExportFileStatus::Processing)
-            ->setCreatedAt(new \DateTimeImmutable())
+            ->setCreatedAt(new DateTimeImmutable())
             ->setDownloadUrl($this->azureBlobFiles->publicUrl($fileName));
 
         $this->entityManager->persist($entity);
@@ -128,21 +116,37 @@ class EntityDataExportMessageHandler
      *
      * @return string[]
      */
-    private function getExportableProperties(string $className): array
+    protected function getExportableProperties(string $className): array
     {
         $return = [];
-        $reflectorClass = new \ReflectionClass($className);
+        $reflectorClass = new ReflectionClass($className);
         $reflectorProperties = $reflectorClass->getProperties();
         foreach ($reflectorProperties as $reflectorProperty) {
-            if ($reflectorProperty->getAttributes(Exportable::class) === []) {
+            $attributes = $reflectorProperty->getAttributes(Exportable::class);
+            if ($attributes === []) {
                 continue;
             }
 
-            $relationProperties = $reflectorProperty->getAttributes(Exportable::class)[0]->getArguments();
+            if (count($attributes) > 1) {
+                throw new RuntimeException('Only one Exportable attribute is allowed');
+            }
+
+            $attribute = $attributes[0];
+            $relationProperties = $attribute->getArguments();
+
             if (empty($relationProperties)) {
                 $return[] = $reflectorProperty->getName();
             } else {
-                foreach ($relationProperties['relatedEntityProperties'] as $relationProperty) {
+                if (
+                    !isset($relationProperties['properties'])
+                    && isset($relationProperties[0])
+                    && is_array($relationProperties[0])
+                ) {
+                    $relationProperties['properties'] = $relationProperties[0];
+                    unset($relationProperties[0]);
+                }
+
+                foreach ($relationProperties['properties'] as $relationProperty) {
                     $return[] = $reflectorProperty->getName().'.'.$relationProperty;
                 }
             }
@@ -152,15 +156,15 @@ class EntityDataExportMessageHandler
     }
 
     /**
-     * @param resource                          $fileStream
-     * @param array<int, array<string, string>> $data
+     * @param resource $fileStream
+     * @param string[] $data
      */
-    private function writeRow($fileStream, array $data): void
+    protected function writeRow($fileStream, array $data): void
     {
         $result = fputcsv($fileStream, $data);
 
         if ($result === false) {
-            throw new \RuntimeException('Cannot write to file stream');
+            throw new RuntimeException('Cannot write to file stream');
         }
     }
 
@@ -169,13 +173,13 @@ class EntityDataExportMessageHandler
      *
      * @throws FilesystemException
      */
-    private function save($fileStream, string $tempFile, string $fileName): void
+    protected function save($fileStream, string $tempFile, string $fileName): void
     {
         fclose($fileStream);
 
         $fileStreamNew = fopen($tempFile, 'rb');
         if ($fileStreamNew === false) {
-            throw new \RuntimeException('Cannot create file stream');
+            throw new RuntimeException('Cannot create file stream');
         }
 
         $this->azureBlobFiles->writeStream($fileName, $fileStreamNew);
@@ -190,7 +194,7 @@ class EntityDataExportMessageHandler
     {
         $fileStream = fopen($fileName, 'wb');
         if ($fileStream === false) {
-            throw new \RuntimeException('Cannot create file stream');
+            throw new RuntimeException('Cannot create file stream');
         }
 
         return $fileStream;
@@ -200,9 +204,27 @@ class EntityDataExportMessageHandler
     {
         $filename = tempnam(sys_get_temp_dir(), 'entity-data-export');
         if ($filename === false) {
-            throw new \RuntimeException('Cannot create temp file');
+            throw new RuntimeException('Cannot create temp file');
         }
 
         return $filename;
+    }
+
+    /**
+     * @param string[] $properties
+     *
+     * @return string[]
+     */
+    protected function getHeaders(array $properties): array
+    {
+        return array_map(
+            static function (string $propertyPath) {
+                /** @var string[] $propertyAsWords */
+                $propertyAsWords = (new UnicodeString($propertyPath))->title(true)->split('.');
+
+                return implode(' ', $propertyAsWords);
+            },
+            $properties,
+        );
     }
 }
