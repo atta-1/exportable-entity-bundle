@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
+        "php": "^8.2",
         "doctrine/doctrine-bundle": "^2.5",
         "doctrine/orm": "^2.12 || ^3.0",
         "easycorp/easyadmin-bundle": "^4.0|dev-dbal_4",
@@ -20,14 +20,12 @@
         "symfony/dependency-injection": "^6.1",
         "symfony/http-kernel": "^6.1",
         "symfony/messenger": "^6.1",
-        "symfony/security-core": "^6.1",
-        "symfony/serializer": "^6.1",
-        "symfony/uid": "^6.1"
+        "symfony/property-access": "^6.4",
+        "symfony/serializer": "^6.1"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.8",
+        "bamarni/composer-bin-plugin": "^1.8",
         "jetbrains/phpstorm-attributes": "^1.0",
-        "phpunit/phpunit": "^9.5",
         "roave/security-advisories": "dev-latest"
     },
     "autoload": {
@@ -46,6 +44,16 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true
+        }
+    },
+    "extra": {
+        "bamarni-bin": {
+            "bin-links": true,
+            "target-directory": "vendor-bin",
+            "forward-command": true
+        }
     }
 }

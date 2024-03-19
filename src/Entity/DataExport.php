@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atta\ExportableEntityBundle\Entity;
 
 use Atta\ExportableEntityBundle\Enum\ExportFileStatus;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,7 +32,7 @@ class DataExport
     private ?string $exceptionMessage;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, nullable: false)]
-    private ?\DateTimeImmutable $createdAt;
+    private ?DateTimeImmutable $createdAt;
 
     public function getId(): ?int
     {
@@ -79,12 +80,12 @@ class DataExport
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    public function setCreatedAt(DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
 

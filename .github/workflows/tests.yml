@@ -14,14 +14,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - php: '8.1'
+          - php: '8.2'
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -37,7 +35,7 @@ jobs:
           echo "::set-output name=dir::$(composer config cache-files-dir)"
 
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -46,10 +44,13 @@ jobs:
 
 
       - name: Install dependencies
-        run: composer install
+        run: composer update --prefer-dist --no-progress --no-suggest
 
       - name: Run PhpUnit
         run: ./bin/phpunit
 
       - name: Running Code Style Check
         run: ./bin/php-cs-fixer fix -v --diff --dry-run
+
+      - name: Running PHPStan
+        run: ./bin/phpstan analyse
