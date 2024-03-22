@@ -31,7 +31,7 @@ class DataExport
     #[ORM\Column(name: 'exception_message', type: Types::TEXT, nullable: true)]
     private ?string $exceptionMessage;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, nullable: false, options: ['comment' => '(DC2Type:datetime_immutable)'])]
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, nullable: false)]
     private ?DateTimeImmutable $createdAt;
 
     public function getId(): ?int
