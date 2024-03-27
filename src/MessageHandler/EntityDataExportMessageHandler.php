@@ -147,7 +147,7 @@ class EntityDataExportMessageHandler
                 }
 
                 foreach ($relationProperties['properties'] as $relationProperty) {
-                    $return[] = $reflectorProperty->getName().'.'.$relationProperty;
+                    $return[] = $reflectorProperty->getName().'?.'.$relationProperty;
                 }
             }
         }
