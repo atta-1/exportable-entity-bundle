@@ -61,7 +61,7 @@ class EntityDataExportMessageHandlerTest extends TestCase
             }
         };
 
-        self::assertEquals(['a.b'], $target->getExportableProperties($class::class));
+        self::assertEquals(['a?.b'], $target->getExportableProperties($class::class));
     }
 
     public function testGetExportablePropertiesWhenNamedArgUsed(): void
@@ -81,7 +81,7 @@ class EntityDataExportMessageHandlerTest extends TestCase
                 return parent::getExportableProperties($className);
             }
         };
-        self::assertEquals(['a.b'], $target->getExportableProperties($class::class));
+        self::assertEquals(['a?.b'], $target->getExportableProperties($class::class));
     }
 
     public function testGetHeader(): void

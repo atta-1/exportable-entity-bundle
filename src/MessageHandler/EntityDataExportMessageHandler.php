@@ -220,7 +220,7 @@ class EntityDataExportMessageHandler
         return array_map(
             static function (string $propertyPath) {
                 /** @var string[] $propertyAsWords */
-                $propertyAsWords = (new UnicodeString($propertyPath))->title(true)->split('.');
+                $propertyAsWords = (new UnicodeString($propertyPath))->replace('?', '')->title(true)->split('.');
 
                 return implode(' ', $propertyAsWords);
             },
